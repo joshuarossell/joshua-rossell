@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Joshua Rossell — Portfolio
 
-## Getting Started
+Personal portfolio site built with Next.js (App Router), TypeScript, and Tailwind CSS.
 
-First, run the development server:
+## Run locally
+
+Requires Node.js 22 or later.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev      # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Other scripts:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run lint     # ESLint
+npm run build    # production build (also type-checks)
+npm start        # serve the production build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project structure
 
-## Learn More
+```
+src/
+  app/
+    layout.tsx          # <html>, fonts, theme provider, header/footer, skip link
+    page.tsx            # home page: composes the sections in order
+    globals.css         # Tailwind import + light/dark color tokens
+  components/
+    layout/             # SiteHeader, SiteFooter
+    sections/           # Hero, About, Projects, ResumeContact
+    projects/           # ProjectCard
+    theme/              # ThemeProvider, ThemeToggle
+    ui/                 # Section, ExternalLink (shared building blocks)
+  data/
+    site.ts             # name, pitch, about copy, email, social links
+    projects.ts         # project list + Project type
+public/
+  resume.pdf            # replace with the real resume (same filename)
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Editing content
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+All copy lives in `src/data/`. Components contain no personal text.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Personal details:** edit `src/data/site.ts`. Values in `[brackets]` are placeholders.
+- **Resume:** replace `public/resume.pdf`.
+- **Add a project:** add one object to the `projects` array in `src/data/projects.ts`:
 
-## Deploy on Vercel
+  ```ts
+  {
+    slug: "my-project",            // unique, URL-safe
+    title: "My Project",
+    description: "One line about it.",
+    tags: ["TypeScript", "PostgreSQL"],
+    status: "Live",                // "Live" | "In progress" | "Coming soon"
+    repoUrl: "https://github.com/...",
+    demoUrl: "https://...",        // optional
+  },
+  ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+  TypeScript rejects entries with missing fields or an invalid status.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Adding project detail pages later
+
+Each project already has a `slug`, and `getProjectBySlug()` exists in `src/data/projects.ts`. To add detail pages, create `src/app/projects/[slug]/page.tsx` with `generateStaticParams()` returning `projects.map(p => ({ slug: p.slug }))`, and set `export const dynamicParams = false` so unknown slugs return 404.
+
+Don't create this route before at least one project needs a page. This project uses Cache Components (the Next.js 16 default), and an empty `generateStaticParams` result fails the build.
+
+## Deployment
+
+The site is fully static (every route prerenders at build time), so it can be deployed to Vercel or Azure Static Web Apps.
+
+<!-- Deployment steps will be added once a host is chosen. -->
